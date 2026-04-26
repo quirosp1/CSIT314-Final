@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nexus-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nexus
+  template:
+    metadata:
+      labels:
+        app: nexus
+    spec:
+      containers:
+      - name: nexus
+        image: sonatype/nexus3:latest
+        ports:
+        - containerPort: 8081
+        resources:
+          limits:
+            memory: "2Gi" # Increased for M1 stability
+            cpu: "1000m"
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+        # Give Nexus 3 minutes to start before K8s starts checking if it's alive
+        startupProbe:
+          httpGet:
+            path: /
+            port: 8081
+          failureThreshold: 30
+          periodSeconds: 10
